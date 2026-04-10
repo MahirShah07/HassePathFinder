@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hasse Diagram Path-Finding Simulator</title>
+  <link rel="icon" type="image/png" href="./logo/LogoCircle.png" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-title">Hasse Path Finder</div>
+        <div class="brand-subtitle">
+          Interactive poset traversal lab
+          <a id="openLearnModal" class="text-link" href="#">How BFS/DFS Work</a>
+        </div>
+      </div>
+
+      <section class="panel panel-controls">
+        <div class="panel-header">
+          <h2>Controls</h2>
+          <button id="openRelationModal" class="btn ghost" type="button">Relation S / Poset</button>
+        </div>
+
+        <div class="selection">
+          <div class="selection-row">
+            <button id="startBadge" class="badge badge-select" type="button" aria-pressed="true">Start: none</button>
+            <button id="clearStart" class="badge-clear" type="button" aria-label="Clear start node">&times;</button>
+          </div>
+          <div class="selection-row">
+            <button id="endBadge" class="badge badge-select" type="button" aria-pressed="false">End: none</button>
+            <button id="clearEnd" class="badge-clear" type="button" aria-label="Clear end node">&times;</button>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button id="runBfs" class="btn primary" type="button">Run BFS</button>
+          <button id="runDfs" class="btn primary" type="button">Run DFS</button>
+        </div>
+
+        <div class="control">
+          <label class="label" for="speedRange">Speed (Traversal animation delay)</label>
+          <div class="range-row">
+            <input id="speedRange" type="range" min="150" max="1500" step="50" value="650" />
+            <span id="speedLabel" class="range-value">650 ms</span>
+          </div>
+          <p class="panel-hint panel-hint-tight">Lower value runs faster. Higher value slows each BFS/DFS step.</p>
+        </div>
+
+        <div class="control">
+          <label class="label">Step mode</label>
+          <div class="button-row single">
+            <button id="stepModeToggle" class="btn toggle" type="button" aria-pressed="false">Step Mode: Off</button>
+          </div>
+        </div>
+
+        <div class="button-row single">
+          <button id="exportPng" class="btn" type="button">Export PNG</button>
+        </div>
+      </section>
+
+    </aside>
+
+    <main class="workspace">
+      <div class="workspace-header">
+        <div class="workspace-mark" aria-hidden="true">
+          <img class="workspace-mark-img" src="./logo/Logo.png" alt="" />
+        </div>
+        <div class="legend">
+          <div class="legend-item"><span class="legend-dot start"></span>Start</div>
+          <div class="legend-item"><span class="legend-dot end"></span>End</div>
+          <div class="legend-item"><span class="legend-dot visited"></span>Visited</div>
+          <div class="legend-item"><span class="legend-dot current"></span>Current</div>
+          <div class="legend-item"><span class="legend-dot path"></span>Final path</div>
+        </div>
+        <div class="workspace-tool-row">
+          <button id="openPresentDoc" class="btn ghost" type="button">Present</button>
+          <button id="openLogModal" class="btn ghost" type="button">Traversal Log</button>
+        </div>
+      </div>
+
+      <div class="hint workspace-hint">
+        Click nodes to select start and end. Drag nodes to reposition. Use Ctrl+Z / Ctrl+Y to undo or redo moves. Scroll to zoom, drag background to pan.
+      </div>
+
+      <div id="graph" class="graph" aria-label="Hasse diagram graph"></div>
+      <noscript class="noscript">This simulator requires JavaScript to run.</noscript>
+    </main>
+  </div>
+
+  <div id="stepModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" id="stepBackdrop"></div>
+    <div class="modal-content modal-compact" role="dialog" aria-modal="true" aria-labelledby="stepTitle" aria-describedby="stepBody">
+      <div class="modal-header">
+        <h3 id="stepTitle">Step details</h3>
+        <button id="stepClose" class="btn ghost" type="button">Close</button>
+      </div>
+      <div id="stepBody" class="modal-body">
+        <div class="modal-section-title">What just happened</div>
+        <div id="stepExplanation" class="modal-text"></div>
+        <div class="modal-section-title">Next step</div>
+        <div id="stepPreview" class="modal-text"></div>
+      </div>
+      <div class="modal-actions">
+        <button id="stepNext" class="btn primary" type="button">Next Step</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="learnModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" id="learnBackdrop"></div>
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="learnTitle">
+      <div class="modal-header">
+        <h3 id="learnTitle">How BFS and DFS Work</h3>
+        <button id="learnClose" class="btn ghost" type="button">Close</button>
+      </div>
+      <div class="learn-grid">
+        <article class="learn-card">
+          <h4>Breadth-First Search (BFS)</h4>
+          <ul class="learn-list">
+            <li>Explores the graph level by level.</li>
+            <li>Uses a queue to track the next frontier.</li>
+            <li>Visits all neighbors before going deeper.</li>
+            <li>Finds the shortest path in unweighted graphs.</li>
+          </ul>
+          <div class="learn-example">
+            <div class="mini-flow">
+              <div class="mini-step"><span class="mini-node">A</span></div>
+              <div class="mini-link"></div>
+              <div class="mini-step">
+                <span class="mini-node">B</span>
+                <span class="mini-node">C</span>
+              </div>
+              <div class="mini-link"></div>
+              <div class="mini-step">
+                <span class="mini-node">D</span>
+                <span class="mini-node">E</span>
+              </div>
+            </div>
+            <div class="mini-text">
+              Start at A. Visit neighbors B and C. Then visit neighbors of B and C.
+            </div>
+          </div>
+        </article>
+        <article class="learn-card">
+          <h4>Depth-First Search (DFS)</h4>
+          <ul class="learn-list">
+            <li>Goes as deep as possible before backtracking.</li>
+            <li>Uses a stack or recursion to track the path.</li>
+            <li>Backtracks when it reaches a dead end.</li>
+            <li>Does not guarantee the shortest path.</li>
+          </ul>
+          <div class="learn-example">
+            <div class="mini-flow">
+              <div class="mini-step single"><span class="mini-node">A</span></div>
+              <div class="mini-link"></div>
+              <div class="mini-step single"><span class="mini-node">B</span></div>
+              <div class="mini-link"></div>
+              <div class="mini-step single"><span class="mini-node">D</span></div>
+            </div>
+            <div class="mini-text">
+              Start at A -> go to B -> go to D. No more neighbors, backtrack and explore the next branch.
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <div id="relationModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" id="relationBackdrop"></div>
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="relationTitle">
+      <div class="modal-header">
+        <h3 id="relationTitle">Relation S (Poset Proof)</h3>
+        <div class="modal-header-actions">
+          <button id="loadRelationSample" class="btn ghost btn-compact" type="button">Reset</button>
+          <button id="randomGraph" class="btn ghost btn-compact" type="button">Random Graph</button>
+          <button id="relationClose" class="btn ghost" type="button">Close</button>
+        </div>
+      </div>
+
+      <label class="label" for="elementsInput">Elements</label>
+      <div class="relation-inline-row">
+        <input id="elementsInput" type="text" placeholder="1, 2, 3, 4, 6, 12" />
+        <button id="toggleRelationOptions" class="btn ghost" type="button">More options</button>
+      </div>
+
+      <div id="relationAdvanced" class="relation-advanced" aria-hidden="true">
+        <div class="relation-advanced-row">
+          <div class="relation-advanced-field">
+            <label class="label" for="relationCountInput">Generate Elements 1..N</label>
+            <div class="relation-inline-row">
+              <input id="relationCountInput" type="number" min="1" max="80" value="6" />
+              <button id="generateElementsRange" class="btn" type="button">Generate 1..N</button>
+            </div>
+          </div>
+          <div class="relation-advanced-field">
+            <label class="label" for="relationRuleInput">Relation Rule R(x, y)</label>
+            <input id="relationRuleInput" type="text" value="x | y" placeholder="x <= y, x < y, x | y, y | x" />
+          </div>
+        </div>
+        <p class="panel-hint panel-hint-tight">Rule uses x and y from set S.</p>
+      </div>
+      <p id="relationOptionsSummary" class="panel-hint">Default generation uses elements 1..N and relation rule x | y.</p>
+
+      <div class="button-row single">
+        <button id="generatePoset" class="btn primary" type="button">Generate Poset Relation</button>
+      </div>
+
+      <div id="relationError" class="error"></div>
+
+      <div class="relation-results-grid">
+        <section class="relation-result-panel">
+          <div class="modal-section-title">Relations (set format)</div>
+          <textarea id="relationsInput" rows="8" spellcheck="false" placeholder="{(2,2),(2,4),(4,4)}"></textarea>
+          <button id="applyRelations" class="btn" type="button">Apply relations</button>
+        </section>
+        <section class="relation-result-panel">
+          <div class="modal-section-title">Poset proof</div>
+          <pre id="relationProof" class="mono"></pre>
+        </section>
+        <section class="relation-result-panel">
+          <div class="modal-section-title">Adjacency list</div>
+          <pre id="adjacencyList" class="mono"></pre>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div id="logModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" id="logBackdrop"></div>
+    <div class="modal-content modal-log" role="dialog" aria-modal="true" aria-labelledby="logTitle">
+      <div class="modal-header">
+        <h3 id="logTitle">Traversal Log</h3>
+        <button id="logClose" class="btn ghost" type="button">Close</button>
+      </div>
+      <div id="traversalLog" class="log log-popup"></div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/main.js"></script>
+
+  <footer class="site-footer">
+    <div class="footer-left">&copy; 2026 MahirShah07</div>
+    <div class="footer-right">Contributors: <a href="https://github.com/MahirShah07" target="_blank" rel="noopener noreferrer">MahirShah07</a>, <a href="https://github.com/Rumani07" target="_blank" rel="noopener noreferrer">Rumani07</a> | Guided by Dr. Ashlesha Bhise (<a href="https://www.linkedin.com/in/dr-ashlesha-bhise-59474b218/" target="_blank" rel="noopener noreferrer">LinkedIn</a>)</div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project Assets</title>
+  <link rel="icon" type="image/png" href="./logo/LogoCircle.png" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/css/pptxjs.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/css/nv.d3.min.css" />
+  <style>
+    :root {
+      --bg: #f7f1e6;
+      --panel-bg: rgba(255, 255, 255, 0.9);
+      --panel-border: #e4d3bf;
+      --text: #20180f;
+      --muted: #6e6154;
+      --accent: #f2522c;
+      --radius: 16px;
+      --shadow: 0 18px 40px rgba(31, 24, 15, 0.12);
+      --font: "Space Grotesk", "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      color: var(--text);
+      background: radial-gradient(circle at 20% 10%, #efe4d3, transparent 50%), linear-gradient(120deg, var(--bg), #efe4d3);
+      padding: 16px;
+    }
+
+    .card {
+      width: min(1400px, 98vw);
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      display: grid;
+      gap: 16px;
+      margin: 0 auto;
+    }
+
+    .asset-section {
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.6);
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .asset-title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .asset-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .view-switch {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .view-tab {
+      appearance: none;
+      border: 1px solid var(--panel-border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .view-tab.is-active {
+      background: var(--accent);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.6rem;
+    }
+
+    .page-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .page-logo {
+      width: clamp(180px, 30vw, 300px);
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 6px 16px rgba(31, 24, 15, 0.12));
+    }
+
+    .desc {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      border-radius: 12px;
+      border: 1px solid var(--panel-border);
+      background: #fff;
+      color: var(--text);
+      padding: 12px 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .frame {
+      width: 100%;
+      min-height: 520px;
+      border-radius: 12px;
+      border: 1px solid var(--panel-border);
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .report-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .present-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .present-tools .btn {
+      padding: 10px 12px;
+      font-weight: 600;
+    }
+
+    .report-tools .btn {
+      padding: 10px 12px;
+      font-weight: 600;
+    }
+
+    .hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .status.error {
+      color: #b42318;
+      font-weight: 600;
+    }
+
+    .presentation-frame {
+      width: 100%;
+      min-height: 360px;
+      border-radius: 12px;
+      border: 1px solid var(--panel-border);
+      background: #fdfdfd;
+      overflow: auto;
+      overflow-x: hidden;
+      padding: 12px;
+    }
+
+    .viewer-shell {
+      width: 100%;
+    }
+
+    #pptxViewer {
+      min-height: 320px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 520px;
+      border: 0;
+    }
+
+    #pptxViewer #all_slides_warpper {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .asset-section.is-hidden {
+      display: none;
+    }
+
+    @media (max-width: 760px) {
+      .row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="page-head">
+      <img class="page-logo" src="./logo/LogowithName.png" alt="Hasse Path Finder" />
+      <h1>Project Assets</h1>
+    </div>
+    
+
+    <div class="view-switch" aria-label="Section switch">
+      <button id="showPresentation" class="view-tab is-active" type="button" aria-pressed="true">Presentation</button>
+      <button id="showReport" class="view-tab" type="button" aria-pressed="false">Report</button>
+    </div>
+
+    <section class="asset-section" id="presentationSection">
+      <div class="asset-head">
+        <h2 class="asset-title">Presentation (PPTX)</h2>
+        <div class="present-tools">
+          <a class="btn" href="./ProjectPresentation.pptx" id="downloadPptx" download>Download PPTX</a>
+        </div>
+      </div>
+
+      <p class="status" id="presentStatus">Loading presentation...</p>
+
+      <div class="viewer-shell" id="presentationViewerShell">
+        <div class="presentation-frame" id="presentationFrame" aria-label="Presentation preview">
+          <div id="pptxViewer"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="asset-section is-hidden" id="reportSection">
+      <div class="asset-head">
+        <h2 class="asset-title">Report (PDF)</h2>
+        <div class="report-tools">
+          <a class="btn" href="./ProjectReport.pdf" target="_blank" rel="noopener noreferrer" id="openReportDefault">Open PDF in Default Viewer</a>
+        </div>
+      </div>
+      <p class="hint">Report preview</p>
+
+      <div class="viewer-shell" id="reportViewerShell">
+        <div class="frame" id="reportFrameWrap" aria-label="Document preview helper">
+          <iframe id="reportFrame" src="./ProjectReport.pdf#view=FitH" title="Project report PDF preview"></iframe>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/js/jquery-1.11.3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/js/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/js/filereader.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/js/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/js/nv.d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/js/pptxjs.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/js/divs2slides.js"></script>
+
+  <script>
+    (function () {
+      const presentStatus = document.getElementById("presentStatus");
+      const presentationFrame = document.getElementById("presentationFrame");
+      const presentationSection = document.getElementById("presentationSection");
+      const reportSection = document.getElementById("reportSection");
+      const showPresentationButton = document.getElementById("showPresentation");
+      const showReportButton = document.getElementById("showReport");
+      const pptxViewer = document.getElementById("pptxViewer");
+
+      if (!pptxViewer || !presentStatus || !presentationFrame || !presentationSection || !reportSection || !showPresentationButton || !showReportButton) {
+        return;
+      }
+
+      let pptRendered = false;
+
+      function setPresentStatus(message, isError) {
+        presentStatus.textContent = message;
+        presentStatus.classList.toggle("error", Boolean(isError));
+      }
+
+      function setActiveSection(section) {
+        const showPresentation = section === "presentation";
+        presentationSection.classList.toggle("is-hidden", !showPresentation);
+        reportSection.classList.toggle("is-hidden", showPresentation);
+        showPresentationButton.classList.toggle("is-active", showPresentation);
+        showReportButton.classList.toggle("is-active", !showPresentation);
+        showPresentationButton.setAttribute("aria-pressed", showPresentation ? "true" : "false");
+        showReportButton.setAttribute("aria-pressed", showPresentation ? "false" : "true");
+      }
+
+      function fitPresentationToView() {
+        const wrapper = document.getElementById("all_slides_warpper");
+        const slide = pptxViewer.querySelector(".slide");
+        if (!wrapper || !slide) {
+          return;
+        }
+
+        const availableWidth = Math.max(320, presentationFrame.clientWidth - 24);
+        const slideWidth = Math.max(1, slide.offsetWidth);
+        const scale = Math.max(0.25, Math.min(1, availableWidth / slideWidth));
+
+        wrapper.style.transformOrigin = "top center";
+        wrapper.style.transform = `scale(${scale})`;
+      }
+
+      function renderPresentation() {
+        if (pptRendered) {
+          presentationFrame.scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
+
+        if (!window.jQuery || !window.jQuery.fn || typeof window.jQuery.fn.pptxToHtml !== "function") {
+          setPresentStatus("Unable to load PPTX viewer library. Use Download PPTX.", true);
+          return;
+        }
+
+        try {
+          pptxViewer.innerHTML = "";
+          setPresentStatus("Loading presentation slides...", false);
+          window.jQuery("#pptxViewer").pptxToHtml({
+            pptxFileUrl: "./ProjectPresentation.pptx",
+            slideMode: true,
+            keyBoardShortCut: false,
+            showFullscreenBtn: false,
+            mediaProcess: true,
+            slidesScale: "74"
+          });
+          pptRendered = true;
+          setPresentStatus("Presentation loaded. Use toolbar arrows to navigate slides.", false);
+          presentationFrame.scrollIntoView({ behavior: "smooth", block: "start" });
+          window.setTimeout(fitPresentationToView, 450);
+          window.setTimeout(fitPresentationToView, 1200);
+        } catch (error) {
+          setPresentStatus("Could not render PPTX in browser. Use Download PPTX.", true);
+        }
+      }
+
+      showPresentationButton.addEventListener("click", () => {
+        setActiveSection("presentation");
+        window.location.hash = "present";
+        renderPresentation();
+      });
+      showReportButton.addEventListener("click", () => {
+        setActiveSection("report");
+        window.location.hash = "report";
+      });
+
+      window.addEventListener("resize", () => {
+        window.setTimeout(fitPresentationToView, 120);
+      });
+
+      if (window.location.hash === "#present") {
+        setActiveSection("presentation");
+        renderPresentation();
+      } else if (window.location.hash === "#report") {
+        setActiveSection("report");
+      } else {
+        setActiveSection("presentation");
+        renderPresentation();
+      }
+    })();
+  </script>
+</body>
+</html>
