@@ -285,9 +285,17 @@ export function createGraph(container, options = {}) {
       .classed("end", (d) => d.id === endId);
   }
 
-  function setTraversalState({ visited, current, path, activeEdge, visitedOrder }) {
+  function setTraversalState({
+    visited,
+    current,
+    path,
+    activeEdge,
+    visitedOrder,
+    highlightShortest
+  }) {
     const visitedSet = new Set(visited || []);
     const pathSet = new Set(path || []);
+    const shortestSet = Boolean(highlightShortest) && pathSet.size > 0;
     const orderSource = visitedOrder || visited || [];
     const orderMap = new Map(
       orderSource.map((id, index) => [id, String(index + 1)])
@@ -296,7 +304,8 @@ export function createGraph(container, options = {}) {
     nodeSelection
       .classed("visited", (d) => visitedSet.has(d.id))
       .classed("current", (d) => d.id === current)
-      .classed("path", (d) => pathSet.has(d.id));
+      .classed("path", (d) => pathSet.has(d.id))
+      .classed("shortest-path", (d) => shortestSet && pathSet.has(d.id));
 
     nodeSelection
       .select("text.visit-order")
@@ -315,6 +324,10 @@ export function createGraph(container, options = {}) {
 
     edgeSelection
       .classed("path", (d) => pathEdges.has(`${d.source}->${d.target}`))
+      .classed(
+        "shortest-path",
+        (d) => shortestSet && pathEdges.has(`${d.source}->${d.target}`)
+      )
       .classed("active", (d) =>
         activeKey ? activeKey === `${d.source}->${d.target}` : false
       );
@@ -324,9 +337,13 @@ export function createGraph(container, options = {}) {
     nodeSelection
       .classed("visited", false)
       .classed("current", false)
-      .classed("path", false);
+      .classed("path", false)
+      .classed("shortest-path", false);
     nodeSelection.select("text.visit-order").text("");
-    edgeSelection.classed("path", false).classed("active", false);
+    edgeSelection
+      .classed("path", false)
+      .classed("shortest-path", false)
+      .classed("active", false);
   }
 
   function resetLayout() {

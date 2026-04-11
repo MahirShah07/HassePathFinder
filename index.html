@@ -41,6 +41,13 @@
         </div>
 
         <div class="control">
+          <label class="label" for="dfsPathsList">DFS Paths</label>
+          <div id="dfsPathsList" class="paths-list" aria-live="polite">
+            <div class="paths-empty">Run DFS to list all possible paths.</div>
+          </div>
+        </div>
+
+        <div class="control">
           <label class="label" for="speedRange">Speed (Traversal animation delay)</label>
           <div class="range-row">
             <input id="speedRange" type="range" min="150" max="1500" step="50" value="650" />

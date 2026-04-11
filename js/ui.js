@@ -52,7 +52,8 @@ export function createUI(callbacks = {}) {
     relationError: document.querySelector("#relationError"),
     relationProof: document.querySelector("#relationProof"),
     adjacencyList: document.querySelector("#adjacencyList"),
-    traversalLog: document.querySelector("#traversalLog")
+    traversalLog: document.querySelector("#traversalLog"),
+    dfsPathsList: document.querySelector("#dfsPathsList")
   };
 
   const algoButtons = Array.from(document.querySelectorAll("[data-algo]"));
@@ -164,6 +165,27 @@ export function createUI(callbacks = {}) {
   bindClick(elements.logBackdrop, () => {
     hideLogModal();
   });
+
+  if (elements.dfsPathsList) {
+    elements.dfsPathsList.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      const pathButton = target.closest(".path-link");
+      if (!(pathButton instanceof HTMLButtonElement)) {
+        return;
+      }
+
+      const index = Number(pathButton.dataset.pathIndex);
+      if (!Number.isInteger(index) || index < 0) {
+        return;
+      }
+
+      callbacks.onSelectDfsPath?.(index);
+    });
+  }
 
   bindClick(elements.toggleRelationOptions, () => {
     toggleRelationOptions();
@@ -425,6 +447,54 @@ export function createUI(callbacks = {}) {
     elements.traversalLog.innerHTML = "";
   }
 
+  function setDfsPaths(paths, labelMap, shortestIndex) {
+    if (!elements.dfsPathsList) {
+      return;
+    }
+
+    elements.dfsPathsList.innerHTML = "";
+
+    if (!Array.isArray(paths) || !paths.length) {
+      clearDfsPaths();
+      return;
+    }
+
+    paths.forEach((path, index) => {
+      const item = document.createElement("div");
+      const isShortest = index === shortestIndex;
+      item.className = `path-item${isShortest ? " is-shortest" : ""}`;
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "path-link";
+      button.dataset.pathIndex = String(index);
+      button.textContent = buildPathLabel(path, index, labelMap, isShortest);
+
+      item.appendChild(button);
+      elements.dfsPathsList.appendChild(item);
+    });
+  }
+
+  function setActiveDfsPath(index) {
+    if (!elements.dfsPathsList) {
+      return;
+    }
+
+    const links = elements.dfsPathsList.querySelectorAll(".path-link");
+    links.forEach((link) => {
+      const linkIndex = Number(link.dataset.pathIndex);
+      link.classList.toggle("is-active", Number.isInteger(linkIndex) && linkIndex === index);
+    });
+  }
+
+  function clearDfsPaths() {
+    if (!elements.dfsPathsList) {
+      return;
+    }
+    elements.dfsPathsList.innerHTML =
+      '<div class="paths-empty">Run DFS to list all possible paths.</div>';
+  }
+
   function setAdjacencyList(text) {
     if (!elements.adjacencyList) return;
     elements.adjacencyList.textContent = text;
@@ -540,6 +610,15 @@ export function createUI(callbacks = {}) {
     });
   }
 
+  function buildPathLabel(path, index, labelMap, isShortest) {
+    const labels = (Array.isArray(path) ? path : []).map(
+      (id) => labelMap?.get(id) || id
+    );
+    const weight = Math.max(0, labels.length - 1);
+    const shortestSuffix = isShortest ? " | Shortest path" : "";
+    return `Show path ${index + 1}: ${labels.join(" -> ")} (weight ${weight})${shortestSuffix}`;
+  }
+
   return {
     setSelection,
     setSelectionMode,
@@ -573,6 +652,9 @@ export function createUI(callbacks = {}) {
     hideRelationModal,
     showLogModal,
     hideLogModal,
-    toggleRelationOptions
+    toggleRelationOptions,
+    setDfsPaths,
+    setActiveDfsPath,
+    clearDfsPaths
   };
 }

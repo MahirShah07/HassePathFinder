@@ -26,7 +26,10 @@ const state = {
   relationEditTimerId: null,
   stepIndex: 0,
   steps: [],
-  labelById: new Map()
+  labelById: new Map(),
+  dfsPaths: [],
+  shortestPathIndex: -1,
+  selectedPathIndex: -1
 };
 
 const graphContainer = document.querySelector("#graph");
@@ -52,6 +55,7 @@ const ui = createUI({
   onGeneratePoset: () => generatePosetRelation(),
   onRelationOptionsChanged: () => updateRelationOptionsSummary(),
   onRelationsInputChanged: () => handleRelationsInputChanged(),
+  onSelectDfsPath: (index) => showDfsPathByIndex(index),
   onOpenPresentDoc: () => openProjectAssetPage("present"),
   onSpeedChange: (value) => updateSpeed(value),
   onAlgoChange: (algo) => setAlgo(algo),
@@ -162,6 +166,7 @@ function loadGraph(graphData) {
   ui.setNextStepEnabled(false);
   setIdleTrace();
   ui.clearLog();
+  clearDfsPathState();
 }
 
 function loadRelationSample(apply = true) {
@@ -342,6 +347,16 @@ function startTraversal(mode) {
     mode
   });
 
+  if (mode === "dfs") {
+    state.dfsPaths = Array.isArray(result.allPaths) ? result.allPaths : [];
+    state.shortestPathIndex = findPathIndex(state.dfsPaths, result.path);
+    state.selectedPathIndex = state.shortestPathIndex;
+    ui.setDfsPaths(state.dfsPaths, state.labelById, state.shortestPathIndex);
+    ui.setActiveDfsPath(state.selectedPathIndex);
+  } else {
+    clearDfsPathState();
+  }
+
   state.steps = result.steps;
   state.stepIndex = 0;
 
@@ -387,7 +402,8 @@ function advanceStep() {
     current: step.current,
     path: step.path,
     activeEdge: step.activeEdge,
-    visitedOrder: step.visited
+    visitedOrder: step.visited,
+    highlightShortest: Boolean(step.highlightShortest)
   });
 
   const infoLines = [
@@ -422,6 +438,10 @@ function advanceStep() {
     state.running = false;
     ui.setControlsDisabled(false);
     ui.setNextStepEnabled(false);
+    if (state.algo === "dfs" && state.shortestPathIndex >= 0) {
+      ui.setActiveDfsPath(state.shortestPathIndex);
+      state.selectedPathIndex = state.shortestPathIndex;
+    }
     if (state.stepMode) {
       ui.showStepModal({
         title: `Step ${stepNumber} of ${total} (${state.algo.toUpperCase()})`,
@@ -444,6 +464,7 @@ function resetTraversal(resetLayout) {
   ui.hideStepModal();
   setIdleTrace();
   ui.clearLog();
+  clearDfsPathState();
   state.startId = null;
   state.endId = null;
   state.selectionMode = "start";
@@ -634,6 +655,68 @@ function formatTrace(list) {
 
 function formatRelationText(relations) {
   return `{${relations.map((pair) => `(${pair.source},${pair.target})`).join(",")}}`;
+}
+
+function showDfsPathByIndex(index) {
+  if (state.running || !Number.isInteger(index)) {
+    return;
+  }
+
+  if (index < 0 || index >= state.dfsPaths.length) {
+    return;
+  }
+
+  const path = state.dfsPaths[index];
+  const isShortest = index === state.shortestPathIndex;
+  state.selectedPathIndex = index;
+  ui.setActiveDfsPath(index);
+
+  graph.setTraversalState({
+    visited: [],
+    current: null,
+    path,
+    activeEdge: null,
+    visitedOrder: [],
+    highlightShortest: isShortest
+  });
+
+  const labelText = formatTrace(path);
+  const labelPrefix = isShortest ? "Shortest path selected" : "Path selected";
+  ui.setInfo(`${labelPrefix}: ${labelText}`, isShortest ? "success" : "info");
+  ui.appendLog(`${labelPrefix}: ${labelText}`);
+}
+
+function clearDfsPathState() {
+  state.dfsPaths = [];
+  state.shortestPathIndex = -1;
+  state.selectedPathIndex = -1;
+  ui.clearDfsPaths();
+}
+
+function findPathIndex(paths, targetPath) {
+  if (!Array.isArray(paths) || !Array.isArray(targetPath)) {
+    return -1;
+  }
+
+  return paths.findIndex((path) => pathsEqual(path, targetPath));
+}
+
+function pathsEqual(left, right) {
+  if (!Array.isArray(left) || !Array.isArray(right)) {
+    return false;
+  }
+
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  for (let i = 0; i < left.length; i += 1) {
+    if (left[i] !== right[i]) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function buildProofReport(parsed, proof) {
