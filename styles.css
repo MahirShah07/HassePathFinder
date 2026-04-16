@@ -332,6 +332,10 @@ body::before {
   margin-bottom: 12px;
 }
 
+.control.is-hidden {
+  display: none;
+}
+
 .range-row {
   display: flex;
   align-items: center;

@@ -53,6 +53,7 @@ export function createUI(callbacks = {}) {
     relationProof: document.querySelector("#relationProof"),
     adjacencyList: document.querySelector("#adjacencyList"),
     traversalLog: document.querySelector("#traversalLog"),
+    dfsPathsControl: document.querySelector("#dfsPathsControl"),
     dfsPathsList: document.querySelector("#dfsPathsList")
   };
 
@@ -452,10 +453,11 @@ export function createUI(callbacks = {}) {
       return;
     }
 
+    setDfsPathsVisible(true);
     elements.dfsPathsList.innerHTML = "";
 
     if (!Array.isArray(paths) || !paths.length) {
-      clearDfsPaths();
+      renderEmptyDfsPaths("No DFS path found for the selected start and end nodes.");
       return;
     }
 
@@ -491,8 +493,25 @@ export function createUI(callbacks = {}) {
     if (!elements.dfsPathsList) {
       return;
     }
-    elements.dfsPathsList.innerHTML =
-      '<div class="paths-empty">Run DFS to list all possible paths.</div>';
+    setDfsPathsVisible(false);
+    renderEmptyDfsPaths("Run DFS to list all possible paths.");
+  }
+
+  function setDfsPathsVisible(visible) {
+    if (!elements.dfsPathsControl) {
+      return;
+    }
+
+    const shouldShow = Boolean(visible);
+    elements.dfsPathsControl.classList.toggle("is-hidden", !shouldShow);
+    elements.dfsPathsControl.setAttribute("aria-hidden", shouldShow ? "false" : "true");
+  }
+
+  function renderEmptyDfsPaths(message) {
+    if (!elements.dfsPathsList) {
+      return;
+    }
+    elements.dfsPathsList.innerHTML = `<div class="paths-empty">${message}</div>`;
   }
 
   function setAdjacencyList(text) {
